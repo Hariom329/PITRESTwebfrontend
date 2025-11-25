@@ -1,0 +1,46 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #fff;
+}
+
+.masonry-container {
+    column-count: 2;
+    column-gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .masonry-container {
+        column-count: 3;
+    }
+}
+
+@media (min-width: 992px) {
+    .masonry-container {
+        column-count: 4;
+    }
+}
+
+@media (min-width: 1200px) {
+    .masonry-container {
+        column-count: 5;
+    }
+}
+
+.masonry-item {
+    break-inside: avoid;
+    margin-bottom: 16px;
+}
+
+.pin-card:hover {
+    filter: brightness(0.9);
+    cursor: zoom-in;
+}
+
+.pin-card img {
+    border-radius: 16px;
+}
