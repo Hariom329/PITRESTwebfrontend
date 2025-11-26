@@ -29,6 +29,7 @@ const Signup: React.FC = () => {
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [birthdate, setBirthdate] = useState('');
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const { signup, checkEmailExists } = useAuth();
@@ -52,8 +53,13 @@ const Signup: React.FC = () => {
         else if (!emailRegex.test(email)) newErrors.email = 'Invalid email format';
         else if (checkEmailExists(email)) newErrors.email = 'Email already taken';
 
+        if (!username) newErrors.username = 'Username is required';
+        else if (username.length < 3) newErrors.username = 'Username must be at least 3 characters';
+
         if (!password) newErrors.password = 'Password is required';
         else if (password.length < 6) newErrors.password = 'Password too short';
+
+        if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
 
         if (!birthdate) newErrors.age = 'Birthdate is required';
         else {
@@ -77,7 +83,7 @@ const Signup: React.FC = () => {
             const today = new Date();
             const birthDate = new Date(birthdate);
             let age = today.getFullYear() - birthDate.getFullYear();
-            const success = signup(email, password, username || email.split('@')[0], age);
+            const success = signup(email, password, username, age);
             if (success) navigate('/');
         }
     };
@@ -243,6 +249,18 @@ const Signup: React.FC = () => {
                             </div>
 
                             <div className="mb-3">
+                                <label className="form-label small fw-bold text-muted">Username</label>
+                                <input
+                                    type="text"
+                                    className={`form-control form-control-lg rounded-4 fs-6 ${errors.username ? 'is-invalid' : ''}`}
+                                    placeholder="Choose a username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                                {errors.username && <div className="invalid-feedback">{errors.username}</div>}
+                            </div>
+
+                            <div className="mb-3">
                                 <label className="form-label small fw-bold text-muted">Password</label>
                                 <input
                                     type="password"
@@ -252,6 +270,18 @@ const Signup: React.FC = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                                 {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label small fw-bold text-muted">Confirm Password</label>
+                                <input
+                                    type="password"
+                                    className={`form-control form-control-lg rounded-4 fs-6 ${errors.confirmPassword ? 'is-invalid' : ''}`}
+                                    placeholder="Confirm your password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                />
+                                {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
                             </div>
 
                             <div className="mb-4">
