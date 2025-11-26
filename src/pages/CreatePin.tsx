@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MOCK_BOARDS } from '../data/mockData';
-import { FaUpload } from 'react-icons/fa';
+import { FaUpload, FaTrash } from 'react-icons/fa';
 
 const CreatePin: React.FC = () => {
+    const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [imageUrl, setImageUrl] = useState('');
     const [destinationLink, setDestinationLink] = useState('');
+    const [keywords, setKeywords] = useState('');
+    const [attribution, setAttribution] = useState('');
     const [selectedBoard, setSelectedBoard] = useState(MOCK_BOARDS[0]?.id || '');
     const [isPrivate, setIsPrivate] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Create a fake local URL for preview
+            const url = URL.createObjectURL(file);
+            setImageUrl(url);
+        }
+    };
 
     const handleSave = (isDraft: boolean) => {
         console.log('Saving pin:', {
@@ -17,6 +31,8 @@ const CreatePin: React.FC = () => {
             description,
             imageUrl,
             destinationLink,
+            keywords,
+            attribution,
             selectedBoard,
             isPrivate,
             isDraft
@@ -40,10 +56,24 @@ const CreatePin: React.FC = () => {
                         <div className="col-md-6 p-4">
                             <h2 className="fw-bold mb-3">{title || 'No Title'}</h2>
                             <p className="text-muted mb-4">{description || 'No description'}</p>
+
+                            {destinationLink && (
+                                <p className="mb-2"><a href={destinationLink} target="_blank" rel="noreferrer" className="btn btn-light rounded-pill fw-bold text-truncate" style={{ maxWidth: '100%' }}>{destinationLink}</a></p>
+                            )}
+
                             <div className="d-flex align-items-center mb-3">
                                 <img src="https://i.pravatar.cc/150?u=me" className="rounded-circle me-3" width="48" height="48" alt="" />
                                 <span className="fw-bold">You</span>
                             </div>
+
+                            {attribution && <p className="small text-muted mt-4">Source: {attribution}</p>}
+                            {keywords && (
+                                <div className="mt-3">
+                                    {keywords.split(',').map((tag, i) => (
+                                        <span key={i} className="badge bg-light text-dark me-1 rounded-pill">#{tag.trim()}</span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -69,6 +99,12 @@ const CreatePin: React.FC = () => {
                                         <button className="dropdown-item" onClick={() => setSelectedBoard(board.id)}>{board.name}</button>
                                     </li>
                                 ))}
+                                <li><hr className="dropdown-divider" /></li>
+                                <li>
+                                    <button className="dropdown-item fw-bold text-danger" onClick={() => navigate('/create-board')}>
+                                        Create Board
+                                    </button>
+                                </li>
                             </ul>
                         </div>
                         <button className="btn btn-danger rounded-pill fw-bold px-4" onClick={() => handleSave(false)}>Save</button>
@@ -77,11 +113,20 @@ const CreatePin: React.FC = () => {
 
                 <div className="row g-0">
                     <div className="col-md-5 p-5 border-end">
-                        <div className="bg-light rounded-4 d-flex flex-column align-items-center justify-content-center text-center p-4" style={{ height: '450px', border: '2px dashed #ddd' }}>
+                        <div
+                            className="bg-light rounded-4 d-flex flex-column align-items-center justify-content-center text-center p-4 position-relative"
+                            style={{ height: '450px', border: '2px dashed #ddd', cursor: 'pointer' }}
+                            onClick={() => !imageUrl && fileInputRef.current?.click()}
+                        >
                             {imageUrl ? (
                                 <div className="position-relative w-100 h-100">
                                     <img src={imageUrl} className="w-100 h-100 rounded-4" style={{ objectFit: 'cover' }} alt="Upload" />
-                                    <button className="btn btn-light rounded-circle position-absolute bottom-0 end-0 m-3" onClick={() => setImageUrl('')}>×</button>
+                                    <button
+                                        className="btn btn-light rounded-circle position-absolute bottom-0 end-0 m-3 shadow-sm"
+                                        onClick={(e) => { e.stopPropagation(); setImageUrl(''); }}
+                                    >
+                                        <FaTrash className="text-secondary" />
+                                    </button>
                                 </div>
                             ) : (
                                 <>
@@ -89,12 +134,22 @@ const CreatePin: React.FC = () => {
                                     <p className="fw-bold mb-2">Choose a file or drag and drop it here</p>
                                     <p className="small text-muted mb-4">We recommend using high quality .jpg files less than 20MB</p>
                                     <input
-                                        type="text"
-                                        className="form-control rounded-pill"
-                                        placeholder="Paste image URL here..."
-                                        value={imageUrl}
-                                        onChange={(e) => setImageUrl(e.target.value)}
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="d-none"
+                                        accept="image/*,video/*"
+                                        onChange={handleFileChange}
                                     />
+                                    {/* Fallback URL input */}
+                                    <div className="w-100 px-3" onClick={e => e.stopPropagation()}>
+                                        <input
+                                            type="text"
+                                            className="form-control rounded-pill text-center small"
+                                            placeholder="Or paste image URL"
+                                            value={imageUrl}
+                                            onChange={(e) => setImageUrl(e.target.value)}
+                                        />
+                                    </div>
                                 </>
                             )}
                         </div>
@@ -128,12 +183,35 @@ const CreatePin: React.FC = () => {
                         </div>
 
                         <div className="mb-4">
+                            <label className="form-label small fw-bold text-muted">Destination Link</label>
                             <input
                                 type="text"
                                 className="form-control rounded-pill py-2"
                                 placeholder="Add a destination link"
                                 value={destinationLink}
                                 onChange={(e) => setDestinationLink(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="form-label small fw-bold text-muted">Keywords (comma separated)</label>
+                            <input
+                                type="text"
+                                className="form-control rounded-pill py-2"
+                                placeholder="e.g., nature, travel, food"
+                                value={keywords}
+                                onChange={(e) => setKeywords(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="form-label small fw-bold text-muted">Attribution / Source</label>
+                            <input
+                                type="text"
+                                className="form-control rounded-pill py-2"
+                                placeholder="Credit the original creator"
+                                value={attribution}
+                                onChange={(e) => setAttribution(e.target.value)}
                             />
                         </div>
 

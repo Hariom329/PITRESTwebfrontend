@@ -10,7 +10,12 @@ import CreatePin from './pages/CreatePin';
 import BoardDetail from './pages/BoardDetail';
 import SearchPage from './pages/SearchPage';
 import Notifications from './pages/Notifications';
+import BusinessExplorer from './pages/BusinessExplorer';
+import SponsoredExplorer from './pages/SponsoredExplorer';
+import CreateBoard from './pages/CreateBoard';
 import { AuthProvider, useAuth } from './context/AuthContext';
+
+import Footer from './components/Footer';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -21,7 +26,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    return <>{children}</>;
+    return (
+        <div className="d-flex flex-column min-vh-100">
+            {children}
+            <Footer />
+        </div>
+    );
 };
 
 function App() {
@@ -33,13 +43,15 @@ function App() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
 
-                        {/* Protected Routes */}
+                        {/* Root Route: Landing Page (Signup) if guest, Home if auth */}
                         <Route path="/" element={
-                            <ProtectedRoute>
+                            <AuthWrapper>
                                 <Navbar />
                                 <Home />
-                            </ProtectedRoute>
+                            </AuthWrapper>
                         } />
+
+                        {/* Protected Routes */}
                         <Route path="/pin/:id" element={
                             <ProtectedRoute>
                                 <Navbar />
@@ -76,6 +88,24 @@ function App() {
                                 <Notifications />
                             </ProtectedRoute>
                         } />
+                        <Route path="/business" element={
+                            <ProtectedRoute>
+                                <Navbar />
+                                <BusinessExplorer />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/shop" element={
+                            <ProtectedRoute>
+                                <Navbar />
+                                <SponsoredExplorer />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/create-board" element={
+                            <ProtectedRoute>
+                                <Navbar />
+                                <CreateBoard />
+                            </ProtectedRoute>
+                        } />
                     </Routes>
                 </div>
             </Router>
@@ -83,5 +113,20 @@ function App() {
     );
 }
 
+// Wrapper to handle Root Route logic
+const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { isAuthenticated } = useAuth();
+
+    if (!isAuthenticated) {
+        return <Signup />;
+    }
+
+    return (
+        <div className="d-flex flex-column min-vh-100">
+            {children}
+            <Footer />
+        </div>
+    );
+};
+
 export default App;
-// Rebuild trigger

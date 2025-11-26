@@ -36,6 +36,44 @@ body {
     margin-bottom: 16px;
 }
 
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #fff;
+}
+
+.masonry-container {
+    column-count: 2;
+    column-gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .masonry-container {
+        column-count: 3;
+    }
+}
+
+@media (min-width: 992px) {
+    .masonry-container {
+        column-count: 4;
+    }
+}
+
+@media (min-width: 1200px) {
+    .masonry-container {
+        column-count: 5;
+    }
+}
+
+.masonry-item {
+    break-inside: avoid;
+    margin-bottom: 16px;
+}
+
 .pin-card:hover {
     filter: brightness(0.9);
     cursor: zoom-in;
@@ -43,4 +81,57 @@ body {
 
 .pin-card img {
     border-radius: 16px;
+}
+
+/* Landing Page Animations */
+@keyframes scrollUp {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+@keyframes scrollDown {
+    0% {
+        transform: translateY(-50%);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.animate-scroll-up {
+    animation: scrollUp 40s linear infinite;
+}
+
+.animate-scroll-down {
+    animation: scrollDown 40s linear infinite;
+}
+
+.landing-hero-text {
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+.hover-bg-gray:hover {
+    background-color: #e9ecef;
+}
+
+.hover-text-white:hover {
+    color: white !important;
+}
+
+.hover-underline:hover {
+    text-decoration: underline !important;
 }

@@ -4,14 +4,16 @@ interface User {
     username: string;
     name: string;
     avatar: string;
+    email: string;
 }
 
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
-    login: (username: string) => void;
+    login: (email: string) => boolean;
     logout: () => void;
-    signup: (username: string) => void;
+    signup: (email: string, password: string, username: string, age: number) => boolean;
+    checkEmailExists: (email: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,18 +29,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, []);
 
-    const login = (username: string) => {
-        const newUser = {
-            username,
-            name: 'Test User',
-            avatar: 'https://i.pravatar.cc/150?u=me'
-        };
-        setUser(newUser);
-        localStorage.setItem('pinterest_user', JSON.stringify(newUser));
+    const checkEmailExists = (email: string): boolean => {
+        const users = JSON.parse(localStorage.getItem('pinterest_users_db') || '[]');
+        return users.some((u: any) => u.email === email);
     };
 
-    const signup = (username: string) => {
-        login(username); // Auto login after signup for now
+    const login = (email: string): boolean => {
+        // For mock purposes, we'll allow login if the user exists in our "db" or if it's a test user
+        const users = JSON.parse(localStorage.getItem('pinterest_users_db') || '[]');
+        const foundUser = users.find((u: any) => u.email === email);
+
+        if (foundUser) {
+            const userObj = {
+                username: foundUser.username,
+                name: foundUser.username, // Use username as name for now
+                avatar: 'https://i.pravatar.cc/150?u=' + foundUser.username,
+                email: foundUser.email
+            };
+            setUser(userObj);
+            localStorage.setItem('pinterest_user', JSON.stringify(userObj));
+            return true;
+        }
+
+        // Fallback for previous mock implementation (optional, can be removed if strict)
+        if (email.includes('@')) {
+            const userObj = {
+                username: email.split('@')[0],
+                name: 'Test User',
+                avatar: 'https://i.pravatar.cc/150?u=me',
+                email: email
+            };
+            setUser(userObj);
+            localStorage.setItem('pinterest_user', JSON.stringify(userObj));
+            return true;
+        }
+
+        return false;
+    };
+
+    const signup = (email: string, password: string, username: string, age: number): boolean => {
+        if (checkEmailExists(email)) {
+            return false;
+        }
+
+        const newUser = { email, password, username, age };
+        const users = JSON.parse(localStorage.getItem('pinterest_users_db') || '[]');
+        users.push(newUser);
+        localStorage.setItem('pinterest_users_db', JSON.stringify(users));
+
+        // Auto login
+        return login(email);
     };
 
     const logout = () => {
@@ -47,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, signup }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, signup, checkEmailExists }}>
             {children}
         </AuthContext.Provider>
     );

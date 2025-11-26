@@ -7,20 +7,27 @@ const SearchPage: React.FC = () => {
     const location = useLocation();
     const query = new URLSearchParams(location.search).get('q') || '';
     const [activeTab, setActiveTab] = useState<'pins' | 'boards' | 'people'>('pins');
+    const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'popular'>('relevance');
 
-    const filteredPins = MOCK_PINS.filter(pin =>
+    const sortItems = <T extends { title?: string, name?: string }>(items: T[]) => {
+        if (sortBy === 'newest') return [...items].reverse(); // Mock newest
+        if (sortBy === 'popular') return items; // Mock popular
+        return items; // Relevance (default filter)
+    };
+
+    const filteredPins = sortItems(MOCK_PINS.filter(pin =>
         pin.title.toLowerCase().includes(query.toLowerCase())
-    );
+    ));
 
-    const filteredBoards = MOCK_BOARDS.filter(board =>
+    const filteredBoards = sortItems(MOCK_BOARDS.filter(board =>
         board.name.toLowerCase().includes(query.toLowerCase())
-    );
+    ));
 
     // Mock people results
-    const filteredPeople = [
+    const filteredPeople = sortItems([
         { id: 'u1', name: 'Interior Design Co.', username: 'interiors', avatar: 'https://i.pravatar.cc/150?u=1' },
         { id: 'u2', name: 'Foodie Life', username: 'foodie', avatar: 'https://i.pravatar.cc/150?u=2' },
-    ].filter(user => user.name.toLowerCase().includes(query.toLowerCase()));
+    ].filter(user => user.name.toLowerCase().includes(query.toLowerCase())));
 
     return (
         <div className="container mt-5 pt-5 text-center">
@@ -52,11 +59,12 @@ const SearchPage: React.FC = () => {
                     <button className="btn btn-light rounded-circle"><FaFilter /></button>
                     <div className="dropdown">
                         <button className="btn btn-light rounded-pill fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            All Recommendations
+                            Sort by: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
                         </button>
                         <ul className="dropdown-menu">
-                            <li><button className="dropdown-item" onClick={() => { }}>Most Relevant</button></li>
-                            <li><button className="dropdown-item" onClick={() => { }}>Newest</button></li>
+                            <li><button className="dropdown-item" onClick={() => setSortBy('relevance')}>Most Relevant</button></li>
+                            <li><button className="dropdown-item" onClick={() => setSortBy('newest')}>Newest</button></li>
+                            <li><button className="dropdown-item" onClick={() => setSortBy('popular')}>Popular</button></li>
                         </ul>
                     </div>
                 </div>
@@ -76,7 +84,12 @@ const SearchPage: React.FC = () => {
                             </div>
                         </div>
                     ))}
-                    {filteredPins.length === 0 && <p className="text-muted">No pins found.</p>}
+                    {filteredPins.length === 0 && (
+                        <div className="text-center w-100 py-5">
+                            <h4 className="text-muted mb-3">No pins found matching "{query}"</h4>
+                            <p className="text-muted">Try searching for <strong>travel</strong>, <strong>food</strong>, or <strong>nature</strong>.</p>
+                        </div>
+                    )}
                 </div>
             )}
 
